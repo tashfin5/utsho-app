@@ -1,115 +1,180 @@
-import React from 'react';
-import { ArrowLeft, Pin, Calendar, BookOpen, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Pin, Calendar, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NoticeBoard = () => {
   const navigate = useNavigate();
+  
+  // State to hold our database notices
+  const [notices, setNotices] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // State for the new notice form
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: 'General'
+  });
+
+  // 1. FETCH NOTICES FROM BACKEND WHEN PAGE LOADS
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
+  const fetchNotices = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/notices');
+      const data = await response.json();
+      setNotices(data);
+    } catch (error) {
+      console.error("Error fetching notices:", error);
+    }
+  };
+
+  // 2. SEND NEW NOTICE TO BACKEND
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/api/notices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          author: 'Admin'
+        })
+      });
+
+      if (response.ok) {
+        // Clear form, close modal, and refresh the list!
+        setFormData({ title: '', description: '', category: 'General' });
+        setIsModalOpen(false);
+        fetchNotices(); 
+      }
+    } catch (error) {
+      console.error("Error posting notice:", error);
+    }
+  };
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-sans flex flex-col items-center">
       <div className="w-full max-w-md bg-gray-50 min-h-screen relative">
 
         {/* --- HEADER --- */}
-        <header className="flex items-center gap-4 p-5 bg-white relative z-10">
+        <header className="flex items-center gap-4 p-5 bg-white relative z-10 shadow-sm">
           <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-100 rounded transition-colors">
             <ArrowLeft className="w-6 h-6 text-gray-800" />
           </button>
           <div>
             <h1 className="text-lg font-bold text-gray-900 leading-tight">Notice Board</h1>
-            <p className="text-xs text-gray-500">Stay updated with announcements</p>
+            <p className="text-xs text-gray-500">Live database feed</p>
           </div>
         </header>
 
         <div className="px-5 mt-5 space-y-8">
           
-          {/* --- PINNED NOTICES SECTION --- */}
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-4">
-              <Pin className="w-4 h-4 text-[#CC0000]" /> Pinned Notices
-            </h2>
-            
-            <div className="space-y-4">
-              
-              {/* Important Notice */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-[#CC0000] border-y border-r border-gray-100 relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#CC0000] text-white text-[10px] font-bold px-2 py-0.5 rounded">Important</span>
-                  <Pin className="w-3 h-3 text-gray-400" />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Semester Final Exam Schedule Released</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                  The final exam schedule for the current semester has been published. Please check your dashboard for detailed timings.
-                </p>
-                <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-600">A</span> Admin</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Mar 15, 2026</span>
-                </div>
-              </div>
-
-              {/* Holiday Notice */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-[#CC0000] border-y border-r border-gray-100 relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-[#CC0000] text-white text-[10px] font-bold px-2 py-0.5 rounded">Holiday</span>
-                  <Pin className="w-3 h-3 text-gray-400" />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Holiday Notice - March 21</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                  The coaching center will remain closed on March 21, 2026 due to national holiday. Regular classes will resume on March 22.
-                </p>
-                <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-600">A</span> Admin</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Mar 14, 2026</span>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
           {/* --- ALL NOTICES SECTION --- */}
           <div>
-            <h2 className="text-sm font-bold text-gray-900 mb-4">All Notices</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-4">Latest Notices</h2>
             
-            <div className="space-y-4">
-              
-              {/* Event Notice */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-blue-400 border-y border-r border-gray-100">
-                <div className="mb-2">
-                  <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">Event</span>
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Parent-Teacher Meeting</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                  A parent-teacher meeting is scheduled for March 25, 2026 at 3:00 PM. All parents are requested to attend.
-                </p>
-                <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-600">A</span> Admin</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Mar 13, 2026</span>
-                </div>
+            {notices.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center mt-10">No notices yet. Click the + button to add one!</p>
+            ) : (
+              <div className="space-y-4">
+                {notices.map((notice) => (
+                  <div key={notice._id} className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-blue-400 border-y border-r border-gray-100">
+                    <div className="mb-2 flex justify-between items-center">
+                      <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">
+                        {notice.category}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm mb-2">{notice.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                      {notice.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
+                      <span className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-600">
+                          {notice.author.charAt(0)}
+                        </span> 
+                        {notice.author}
+                      </span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(notice.date)}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              {/* Academic Notice */}
-              <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-green-400 border-y border-r border-gray-100">
-                <div className="mb-2">
-                  <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded">Academic</span>
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">New Study Materials Available</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                  Updated study materials for Physics and Chemistry have been uploaded to the resources section.
-                </p>
-                <div className="flex items-center gap-4 text-[11px] text-gray-400 font-medium">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-200 flex items-center justify-center text-[8px] text-gray-600">P</span> Prof. Rahman</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Mar 12, 2026</span>
-                </div>
-              </div>
-
-            </div>
+            )}
           </div>
-
         </div>
 
-        {/* --- FLOATING ACTION BUTTON (Add Notice) --- */}
-        <button className="fixed bottom-6 right-[calc(50%-10rem)] md:right-[calc(50%-13rem)] w-14 h-14 bg-[#CC0000] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-red-700 hover:scale-105 transition-all z-50">
+        {/* --- FLOATING ACTION BUTTON --- */}
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-6 right-[calc(50%-10rem)] md:right-[calc(50%-13rem)] w-14 h-14 bg-[#CC0000] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-red-700 hover:scale-105 transition-all z-40"
+        >
           <Plus className="w-8 h-8" />
         </button>
+
+        {/* --- ADD NOTICE MODAL --- */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800">
+                <X className="w-5 h-5" />
+              </button>
+              
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Post New Notice</h2>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Title</label>
+                  <input 
+                    type="text" required
+                    className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Category</label>
+                  <select 
+                    className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  >
+                    <option>General</option>
+                    <option>Important</option>
+                    <option>Academic</option>
+                    <option>Event</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Description</label>
+                  <textarea 
+                    required rows="3"
+                    className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  ></textarea>
+                </div>
+                
+                <button type="submit" className="w-full bg-[#CC0000] text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
+                  Publish Notice
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

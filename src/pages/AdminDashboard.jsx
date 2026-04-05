@@ -1,14 +1,13 @@
 import React from 'react';
+import logo from '../assets/logo.png';
 import { 
   Menu, Bell, User, Users, Calendar, 
   ClipboardList, BookOpen, HelpCircle, 
   FileText, Home 
 } from 'lucide-react';
-// THIS IS THE CRITICAL LINE THAT PREVENTS THE WHITE SCREEN:
 import { useNavigate } from 'react-router-dom'; 
 
 const AdminDashboard = () => {
-  // We MUST declare the navigate function here inside the component
   const navigate = useNavigate(); 
 
   return (
@@ -21,10 +20,17 @@ const AdminDashboard = () => {
             <button className="p-1 hover:bg-gray-100 rounded">
               <Menu className="w-6 h-6 text-gray-800" />
             </button>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">Admin Dashboard</h1>
-              <p className="text-xs text-gray-500">Manage your coaching center</p>
+            
+            {/* --- LOGO SECTION UPDATED HERE --- */}
+            <div className="flex items-center gap-2">
+              <img src={logo} alt="Utsho App Logo" className="w-8 h-8 object-contain" />
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 leading-tight">Utsho App</h1>
+                <p className="text-xs text-gray-500">Admin Dashboard</p>
+              </div>
             </div>
+            {/* --------------------------------- */}
+
           </div>
           <div className="flex gap-4">
             <button className="relative p-1">
@@ -59,14 +65,16 @@ const AdminDashboard = () => {
           
           <div className="grid grid-cols-2 gap-4">
             
-            <button className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
+            {/* ADD STUDENT BUTTON WIRED UP HERE */}
+            <button onClick={() => navigate('/students')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
               <div className="p-2 bg-red-50 rounded-lg text-[#CC0000] mb-3">
                 <User className="w-6 h-6" />
               </div>
               <span className="text-sm font-semibold text-gray-800">Add Student</span>
             </button>
 
-            <button className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
+            {/* ADD TEACHER BUTTON WIRED UP HERE */}
+            <button onClick={() => navigate('/teachers')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600 mb-3">
                 <Users className="w-6 h-6" />
               </div>
@@ -124,7 +132,6 @@ const AdminDashboard = () => {
             <span className="text-[10px] font-medium">Schedule</span>
           </button>
           
-          {/* BOTTOM NAV NOTICES BUTTON WIRED UP HERE */}
           <button onClick={() => navigate('/notices')} className="flex flex-col items-center p-2 text-gray-400 hover:text-gray-800 transition-colors">
             <Bell className="w-6 h-6 mb-1" />
             <span className="text-[10px] font-medium">Notices</span>
