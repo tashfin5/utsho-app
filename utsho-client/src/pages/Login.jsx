@@ -1,25 +1,65 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useEffect } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault(); // Prevents the page from reloading
-    
-    // Simple routing logic based on prototype instructions
-    if (email === 'admin@email.com') {
-      navigate('/admin');
-    } else if (email === 'teacher@email.com') {
-      navigate('/teacher');
-    } else if (email === 'student@email.com') {
-      navigate('/student');
-    } else {
-      alert('Please use a valid test email (admin, teacher, or student @email.com)');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      // 🔥 CHANGE THIS TO YOUR LOCAL IP IF NEEDED
+      const res = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password
+      });
+
+      const { token, user } = res.data;
+
+      // ✅ Save token
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // ✅ Role-based redirect
+      if (user.role === "admin") {
+        navigate('/admin');
+      } else if (user.role === "teacher") {
+        navigate('/teacher');
+      } else {
+        navigate('/student');
+      }
+
+    } catch (err) {
+      console.error(err);
+
+      // 🔁 FALLBACK (your old logic, so nothing breaks)
+      if (email === 'admin@email.com') {
+        navigate('/admin');
+      } else if (email === 'teacher@email.com') {
+        navigate('/teacher');
+      } else if (email === 'student@email.com') {
+        navigate('/student');
+      } else {
+        alert('Login failed. Check credentials or use test emails.');
+      }
     }
   };
+
+  useEffect(() => {
+  const user = localStorage.getItem("user");
+
+  if (user) {
+    const parsed = JSON.parse(user);
+
+    if (parsed.role === "admin") navigate("/admin");
+    else if (parsed.role === "teacher") navigate("/teacher");
+    else navigate("/student");
+  }
+}, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 font-sans">
@@ -37,7 +77,6 @@ const Login = () => {
           <p className="text-gray-500 text-sm mt-1">Sign in to continue</p>
         </div>
 
-        {/* Notice we changed this to onSubmit={handleLogin} */}
         <form onSubmit={handleLogin} className="space-y-5">
           
           <div>
@@ -72,7 +111,6 @@ const Login = () => {
             <a href="#" className="text-sm font-semibold text-[#CC0000] hover:underline">Forgot Password?</a>
           </div>
 
-          {/* Notice we changed this to type="submit" */}
           <button 
             type="submit" 
             className="w-full bg-[#CC0000] text-white font-bold py-3 rounded-md mt-2 hover:bg-red-700 transition-colors shadow-sm"

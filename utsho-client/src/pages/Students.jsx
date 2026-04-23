@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, X, Users, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// ✅ ADD THIS
+const API_URL = "http://localhost:5000";
+
 const Students = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
@@ -17,9 +20,23 @@ const Students = () => {
     fetchStudents();
   }, []);
 
+  // ✅ GET TOKEN
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    };
+  };
+
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/students');
+      const response = await fetch(`${API_URL}/api/students`, {
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch");
+
       const data = await response.json();
       setStudents(data);
     } catch (error) {
@@ -48,24 +65,27 @@ const Students = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const url = editMode 
-      ? `http://localhost:5000/api/students/${currentId}` 
-      : 'http://localhost:5000/api/students';
+      ? `${API_URL}/api/students/${currentId}` 
+      : `${API_URL}/api/students`;
+
     const method = editMode ? 'PUT' : 'POST';
 
     try {
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData)
       });
 
-      if (response.ok) {
-        setIsModalOpen(false);
-        fetchStudents(); 
-      }
+      if (!response.ok) throw new Error("Save failed");
+
+      setIsModalOpen(false);
+      fetchStudents(); 
     } catch (error) {
       console.error("Error saving student:", error);
+      alert("Failed to save student");
     }
   };
 
@@ -74,15 +94,18 @@ const Students = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/students/${currentId}`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_URL}/api/students/${currentId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
-      if (response.ok) {
-        setIsModalOpen(false);
-        fetchStudents();
-      }
+
+      if (!response.ok) throw new Error("Delete failed");
+
+      setIsModalOpen(false);
+      fetchStudents();
     } catch (error) {
       console.error("Error deleting student:", error);
+      alert("Failed to delete student");
     }
   };
 
@@ -126,7 +149,6 @@ const Students = () => {
           )}
         </div>
 
-        {/* FLOATING ADD BUTTON */}
         <button 
           onClick={openAddModal}
           className="fixed bottom-6 right-[calc(50%-10rem)] md:right-[calc(50%-13rem)] w-14 h-14 bg-[#CC0000] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-red-700 hover:scale-105 transition-all z-40"
@@ -134,7 +156,6 @@ const Students = () => {
           <Plus className="w-8 h-8" />
         </button>
 
-        {/* MODAL (ADD / EDIT) */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
@@ -152,10 +173,11 @@ const Students = () => {
                   <input type="text" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
                     value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">Class</label>
-                    <input type="text" placeholder="e.g. Class 10" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                    <input type="text" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
                       value={formData.className} onChange={(e) => setFormData({...formData, className: e.target.value})} />
                   </div>
                   <div>
@@ -164,6 +186,7 @@ const Students = () => {
                       value={formData.rollNumber} onChange={(e) => setFormData({...formData, rollNumber: e.target.value})} />
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
                   <input type="tel" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
@@ -175,7 +198,6 @@ const Students = () => {
                     {editMode ? 'Update Student' : 'Save Student'}
                   </button>
 
-                  {/* ONLY SHOW DELETE BUTTON IF WE ARE EDITING */}
                   {editMode && (
                     <button type="button" onClick={handleDelete} className="w-full flex items-center justify-center gap-2 text-red-600 bg-red-50 font-bold py-3 rounded-lg hover:bg-red-100 transition-colors">
                       <Trash2 className="w-4 h-4" /> Delete Student

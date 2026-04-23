@@ -8,7 +8,35 @@ import {
 import { useNavigate } from 'react-router-dom'; 
 
 const AdminDashboard = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  
+  const [stats, setStats] = React.useState({
+    students: 0,
+    teachers: 0,
+    notices: 0
+  });
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:5000/api/stats", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      setStats(data);
+
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
+  React.useEffect(() => {
+  fetchStats();
+}, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-sans flex flex-col items-center">
@@ -17,9 +45,9 @@ const AdminDashboard = () => {
         {/* --- HEADER --- */}
         <header className="flex justify-between items-center p-5 bg-white shadow-sm">
           <div className="flex items-center gap-3">
-            <button className="p-1 hover:bg-gray-100 rounded">
+            {/* <button className="p-1 hover:bg-gray-100 rounded">
               <Menu className="w-6 h-6 text-gray-800" />
-            </button>
+            </button> */} {/*later we can add a sidebar menu here if needed*/}
             
             {/* --- LOGO SECTION UPDATED HERE --- */}
             <div className="flex items-center gap-2">
@@ -46,16 +74,16 @@ const AdminDashboard = () => {
         {/* --- STATS CARDS --- */}
         <div className="grid grid-cols-3 gap-3 px-5 mt-4">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
-            <span className="text-2xl font-bold text-gray-900">156</span>
+            <span className="text-2xl font-bold text-gray-900">{stats.students}</span>
             <span className="text-xs text-gray-500 mt-1">Students</span>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
-            <span className="text-2xl font-bold text-gray-900">24</span>
+            <span className="text-2xl font-bold text-gray-900">{stats.teachers}</span>
             <span className="text-xs text-gray-500 mt-1">Teachers</span>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
-            <span className="text-2xl font-bold text-gray-900">12</span>
-            <span className="text-xs text-gray-500 mt-1">Classes</span>
+            <span className="text-2xl font-bold text-gray-900">{stats.notices}</span>
+            <span className="text-xs text-gray-500 mt-1">Notices</span>
           </div>
         </div>
 

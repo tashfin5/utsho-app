@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, X, GraduationCap, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// ✅ ADD THIS
+const API_URL = "http://localhost:5000";
+
 const Teachers = () => {
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState([]);
@@ -17,9 +20,23 @@ const Teachers = () => {
     fetchTeachers();
   }, []);
 
+  // ✅ AUTH HEADER
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    };
+  };
+
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/teachers');
+      const response = await fetch(`${API_URL}/api/teachers`, {
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch");
+
       const data = await response.json();
       setTeachers(data);
     } catch (error) {
@@ -48,24 +65,27 @@ const Teachers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const url = editMode 
-      ? `http://localhost:5000/api/teachers/${currentId}` 
-      : 'http://localhost:5000/api/teachers';
+      ? `${API_URL}/api/teachers/${currentId}` 
+      : `${API_URL}/api/teachers`;
+
     const method = editMode ? 'PUT' : 'POST';
 
     try {
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(formData)
       });
 
-      if (response.ok) {
-        setIsModalOpen(false);
-        fetchTeachers(); 
-      }
+      if (!response.ok) throw new Error("Save failed");
+
+      setIsModalOpen(false);
+      fetchTeachers(); 
     } catch (error) {
       console.error("Error saving teacher:", error);
+      alert("Failed to save teacher");
     }
   };
 
@@ -74,15 +94,18 @@ const Teachers = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/teachers/${currentId}`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_URL}/api/teachers/${currentId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
-      if (response.ok) {
-        setIsModalOpen(false);
-        fetchTeachers();
-      }
+
+      if (!response.ok) throw new Error("Delete failed");
+
+      setIsModalOpen(false);
+      fetchTeachers();
     } catch (error) {
       console.error("Error deleting teacher:", error);
+      alert("Failed to delete teacher");
     }
   };
 
@@ -154,7 +177,7 @@ const Teachers = () => {
                 
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Subject Taught</label>
-                  <input type="text" placeholder="e.g. Mathematics" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                  <input type="text" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
                     value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} />
                 </div>
 
@@ -176,7 +199,6 @@ const Teachers = () => {
                     {editMode ? 'Update Teacher' : 'Save Teacher'}
                   </button>
 
-                  {/* ONLY SHOW DELETE BUTTON IF WE ARE EDITING */}
                   {editMode && (
                     <button type="button" onClick={handleDelete} className="w-full flex items-center justify-center gap-2 text-red-600 bg-red-50 font-bold py-3 rounded-lg hover:bg-red-100 transition-colors">
                       <Trash2 className="w-4 h-4" /> Delete Teacher
