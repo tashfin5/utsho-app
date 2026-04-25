@@ -24,4 +24,40 @@ router.post("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
   }
 });
 
+// DELETE NOTICE (ADMIN ONLY)
+router.delete("/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    await Notice.findByIdAndDelete(req.params.id);
+    res.json({ message: "Notice deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const updated = await Notice.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch("/:id/pin", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const notice = await Notice.findById(req.params.id);
+
+    notice.isPinned = !notice.isPinned;
+    await notice.save();
+
+    res.json(notice);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

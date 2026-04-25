@@ -5,10 +5,18 @@ import {
   ClipboardList, BookOpen, HelpCircle, 
   FileText, Home 
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import { getUser, logout } from '../utils/auth';
+import LogoutModal from "../components/LogoutModal";
+import { useState } from "react";
+
+const user = getUser();
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+
+  // ✅ ADDED: state for modal
+  const [showLogout, setShowLogout] = useState(false);
   
   const [stats, setStats] = React.useState({
     students: 0,
@@ -35,40 +43,32 @@ const AdminDashboard = () => {
   };
 
   React.useEffect(() => {
-  fetchStats();
-}, []);
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 font-sans flex flex-col items-center">
       <div className="w-full max-w-md bg-gray-50 min-h-screen relative">
         
         {/* --- HEADER --- */}
-        <header className="flex justify-between items-center p-5 bg-white shadow-sm">
+        <header className="flex items-center justify-between p-5 bg-white shadow-sm">
+          
           <div className="flex items-center gap-3">
-            {/* <button className="p-1 hover:bg-gray-100 rounded">
-              <Menu className="w-6 h-6 text-gray-800" />
-            </button> */} {/*later we can add a sidebar menu here if needed*/}
-            
-            {/* --- LOGO SECTION UPDATED HERE --- */}
-            <div className="flex items-center gap-2">
-              <img src={logo} alt="Utsho App Logo" className="w-8 h-8 object-contain" />
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 leading-tight">Utsho App</h1>
-                <p className="text-xs text-gray-500">Admin Dashboard</p>
-              </div>
+            <img src={logo} alt="logo" className="h-8" />
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-xs text-gray-500">Hi, {user?.name || "Admin"}</p>
             </div>
-            {/* --------------------------------- */}
+          </div>
 
-          </div>
-          <div className="flex gap-4">
-            <button className="relative p-1">
-              <Bell className="w-6 h-6 text-gray-800" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#CC0000] rounded-full"></span>
-            </button>
-            <button className="p-1">
-              <User className="w-6 h-6 text-gray-800" />
-            </button>
-          </div>
+          {/* ✅ CHANGED: open modal instead of instant logout */}
+          <button
+            onClick={() => setShowLogout(true)}
+            className="text-sm font-bold text-[#CC0000]"
+          >
+            Logout
+          </button>
+
         </header>
 
         {/* --- STATS CARDS --- */}
@@ -89,24 +89,22 @@ const AdminDashboard = () => {
 
         {/* --- ADMIN FUNCTIONS GRID --- */}
         <div className="px-5 mt-8">
-          <h2 className="text-sm font-bold text-gray-900 mb-4">Admin Functions</h2>
+          
           
           <div className="grid grid-cols-2 gap-4">
             
-            {/* ADD STUDENT BUTTON WIRED UP HERE */}
             <button onClick={() => navigate('/students')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
               <div className="p-2 bg-red-50 rounded-lg text-[#CC0000] mb-3">
                 <User className="w-6 h-6" />
               </div>
-              <span className="text-sm font-semibold text-gray-800">Add Student</span>
+              <span className="text-sm font-semibold text-gray-800">Manage Students</span>
             </button>
 
-            {/* ADD TEACHER BUTTON WIRED UP HERE */}
             <button onClick={() => navigate('/teachers')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
               <div className="p-2 bg-blue-50 rounded-lg text-blue-600 mb-3">
                 <Users className="w-6 h-6" />
               </div>
-              <span className="text-sm font-semibold text-gray-800">Add Teacher</span>
+              <span className="text-sm font-semibold text-gray-800">Manage Teachers</span>
             </button>
 
             <button onClick={() => navigate('/schedule')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors">
@@ -137,7 +135,6 @@ const AdminDashboard = () => {
               <span className="text-sm font-semibold text-gray-800">Manage Questions</span>
             </button>
 
-            {/* MANAGE NOTICES BUTTON WIRED UP HERE */}
             <button onClick={() => navigate('/notices')} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-start hover:border-[#CC0000] transition-colors col-span-2">
               <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600 mb-3">
                 <FileText className="w-6 h-6" />
@@ -170,6 +167,16 @@ const AdminDashboard = () => {
             <span className="text-[10px] font-medium">Profile</span>
           </button>
         </div>
+
+        {/* ✅ ADDED: LOGOUT MODAL */}
+        <LogoutModal
+          open={showLogout}
+          onCancel={() => setShowLogout(false)}
+          onConfirm={() => {
+            logout();
+            window.location.href = "/";
+          }}
+        />
 
       </div>
     </div>

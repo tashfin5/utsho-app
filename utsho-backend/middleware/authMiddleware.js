@@ -1,30 +1,51 @@
 const jwt = require("jsonwebtoken");
 
+// ✅ AUTH MIDDLEWARE
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, "SECRET_KEY");
-    req.user = decoded; // contains id + role
+    const authHeader = req.headers.authorization;
+
+    // ❌ No header
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized: No token" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    // ❌ No token
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized: Token missing" });
+    }
+
+    // ✅ VERIFY TOKEN (use env variable)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // attach user info
+    req.user = decoded;
+
     next();
+
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    console.error("Auth error:", err.message);
+
+    return res.status(401).json({
+      message: "Unauthorized: Invalid or expired token"
+    });
   }
 };
 
-// 🔥 ROLE CHECK MIDDLEWARE
+
+// ✅ ROLE CHECK MIDDLEWARE
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+    try {
+      if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ message: "Forbidden: Access denied" });
+      }
+      next();
+    } catch (err) {
+      return res.status(403).json({ message: "Forbidden" });
     }
-    next();
   };
 };
 

@@ -16,10 +16,22 @@ router.get("/", authMiddleware, async (req, res) => {
 // CREATE → admin only
 router.post("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
   try {
-    const student = new Student(req.body);
+    console.log("BODY:", req.body); // 🔍 debug
+
+    const student = new Student({
+      name: req.body.name,
+      rollNumber: req.body.rollNumber,
+      className: req.body.className,
+      phone: req.body.phone,
+      userId: req.body.userId || "TEMP" // fallback to avoid crash
+    });
+
     const saved = await student.save();
-    res.json(saved);
+
+    res.status(201).json(saved);
+
   } catch (err) {
+    console.error("❌ CREATE STUDENT ERROR:", err); // 🔥 THIS IS KEY
     res.status(500).json({ error: err.message });
   }
 });

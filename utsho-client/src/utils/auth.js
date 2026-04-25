@@ -13,10 +13,20 @@ export const getToken = () => {
 };
 
 export const isAuthenticated = () => {
-  return !!localStorage.getItem("token");
+  const token = localStorage.getItem("token");
+  return !!token && !isTokenExpired(token);
 };
 
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+};
+
+export const isTokenExpired = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
 };

@@ -64,30 +64,80 @@ const Teachers = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const url = editMode 
-      ? `${API_URL}/api/teachers/${currentId}` 
-      : `${API_URL}/api/teachers`;
+  try {
+    const token = localStorage.getItem("token");
 
-    const method = editMode ? 'PUT' : 'POST';
+    // 1. CREATE USER
+    const userRes = await fetch(`${API_URL}/api/auth/create-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        password: formData.phone,
+        role: "teacher"
+      })
+    });
 
+    let userData;
     try {
-      const response = await fetch(url, {
-        method: method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) throw new Error("Save failed");
-
-      setIsModalOpen(false);
-      fetchTeachers(); 
-    } catch (error) {
-      console.error("Error saving teacher:", error);
-      alert("Failed to save teacher");
+      userData = await userRes.json();
+    } catch {
+      userData = null;
     }
-  };
+
+    if (!userRes.ok) {
+      console.error("User creation error:", userData);
+      alert("User creation failed");
+      return;
+    }
+
+    // 2. CREATE TEACHER
+    const teacherRes = await fetch(`${API_URL}/api/teachers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        subject: formData.subject,
+        phone: formData.phone,
+        email: formData.email,
+        userId: userData.userId
+      })
+    });
+
+    let teacherData;
+    try {
+      teacherData = await teacherRes.json();
+    } catch {
+      teacherData = null;
+    }
+
+    if (!teacherRes.ok) {
+      console.error("Teacher creation error:", teacherData);
+      alert("Teacher creation failed");
+      return;
+    }
+
+    // 3. SUCCESS
+    alert(`Teacher Created!\nID: ${userData.userId}\nPassword: ${formData.phone}`);
+
+    setIsModalOpen(false);
+
+    // 4. INSTANT UPDATE (NO REFRESH)
+    setTeachers(prev => [teacherData, ...prev]);
+
+  } catch (err) {
+    console.error("FINAL ERROR:", err);
+    alert("Something went wrong");
+  }
+};
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this teacher?");
@@ -134,8 +184,15 @@ const Teachers = () => {
               <div key={teacher._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center group">
                 <div>
                   <h3 className="font-bold text-gray-900 text-sm">{teacher.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">Subject: <span className="font-semibold">{teacher.subject}</span></p>
-                  <p className="text-xs text-gray-400 mt-1">{teacher.phone}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ID: {teacher.userId || "N/A"} | Subject: {teacher.subject}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Phone: {teacher.phone}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Email: {teacher.email || "N/A"}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-full">

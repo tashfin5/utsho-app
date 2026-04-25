@@ -14,6 +14,9 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 
+const scheduleRoutes = require("./routes/scheduleRoutes");
+app.use("/api/schedule", scheduleRoutes);
+
 // 🔥 ADD THIS (teachers)
 const teacherRoutes = require("./routes/teacherRoutes");
 

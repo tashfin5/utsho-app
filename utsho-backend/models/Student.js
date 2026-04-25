@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  rollNumber: { type: String, required: true },
-  className: { type: String, required: true },
-  phone: { type: String, required: true }
+  name: String,
+  rollNumber: String,
+  className: String,
+  phone: String,
+  userId: String   // ✅ THIS MUST EXIST
 }, { timestamps: true });
 
 module.exports = mongoose.model("Student", studentSchema);

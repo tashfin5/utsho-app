@@ -64,30 +64,76 @@ const Students = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const url = editMode 
-      ? `${API_URL}/api/students/${currentId}` 
-      : `${API_URL}/api/students`;
+  try {
+    const token = localStorage.getItem("token");
 
-    const method = editMode ? 'PUT' : 'POST';
+    // ✅ 1. CREATE USER FIRST
+    const userRes = await fetch(`${API_URL}/api/auth/create-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        password: formData.phone,
+        role: "student"
+      })
+    });
 
+    let userData;
     try {
-      const response = await fetch(url, {
-        method: method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) throw new Error("Save failed");
-
-      setIsModalOpen(false);
-      fetchStudents(); 
-    } catch (error) {
-      console.error("Error saving student:", error);
-      alert("Failed to save student");
+      userData = await userRes.json();
+    } catch {
+      userData = null;
     }
-  };
+
+    if (!userRes.ok) {
+      console.error("User API error:", userData);
+      throw new Error("User creation failed");
+    }
+
+    // ✅ 2. CREATE STUDENT WITH userId
+    const studentRes = await fetch(`${API_URL}/api/students`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        ...formData,
+        userId: userData.userId
+      })
+    });
+
+    let studentData;
+    try {
+      studentData = await studentRes.json();
+    } catch {
+      studentData = null;
+    }
+
+    if (!studentRes.ok) {
+      console.error("Student API error:", studentData);
+      throw new Error("Student creation failed");
+    }
+
+    // ✅ 3. SHOW SUCCESS (keep your alert or modal)
+    alert(`Student Created!\nID: ${userData.userId}\nPassword: ${formData.phone}`);
+
+    setIsModalOpen(false);
+
+    // ✅ 4. INSTANT UI UPDATE (NO REFRESH NEEDED)
+    const newStudent = studentData;
+    setStudents(prev => [newStudent, ...prev]);
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Something went wrong");
+  }
+};
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this student?");
@@ -134,7 +180,9 @@ const Students = () => {
               <div key={student._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center group">
                 <div>
                   <h3 className="font-bold text-gray-900 text-sm">{student.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">Class: {student.className} | Roll: {student.rollNumber}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ID: {student.userId || "N/A"} | Class: {student.className} | Roll: {student.rollNumber}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-1 rounded-full">
@@ -177,8 +225,21 @@ const Students = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">Class</label>
-                    <input type="text" required className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
-                      value={formData.className} onChange={(e) => setFormData({...formData, className: e.target.value})} />
+                    <select
+                      required
+                      className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-[#CC0000]"
+                      value={formData.className}
+                      onChange={(e) => setFormData({ ...formData, className: e.target.value })}
+                    >
+                      <option value="">Select Class</option>
+                      <option>Class 6</option>
+                      <option>Class 7</option>
+                      <option>Class 8</option>
+                      <option>Class 9</option>
+                      <option>Class 10</option>
+                      <option>Class 11</option>
+                      <option>Class 12</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">Roll Number</label>

@@ -5,6 +5,10 @@ import {
   BarChart2, CalendarDays 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
+import { getUser, logout } from '../utils/auth';
+
+const user = getUser();
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -13,25 +17,28 @@ const StudentDashboard = () => {
     <div className="min-h-screen bg-gray-50 pb-20 font-sans flex flex-col items-center">
       <div className="w-full max-w-md bg-gray-50 min-h-screen relative">
         
-        <header className="flex justify-between items-center p-5 bg-white shadow-sm">
+        <header className="flex items-center justify-between p-5 bg-white shadow-sm">
+  
+          {/* LEFT: LOGO + TITLE */}
           <div className="flex items-center gap-3">
-            <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-              <Menu className="w-6 h-6 text-gray-800" />
-            </button>
+            <img src={logo} alt="logo" className="h-8" />
             <div>
-              <h1 className="text-lg font-bold text-gray-900 leading-tight">Student Dashboard</h1>
-              <p className="text-xs text-gray-500">Hi, Nafiz Ahmed</p>
+              <h1 className="text-lg font-bold text-gray-900">Student Dashboard</h1>
+              <p className="text-xs text-gray-500">Hi, {user?.name || "User"}</p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <button className="relative p-1 hover:bg-gray-100 rounded transition-colors">
-              <Bell className="w-6 h-6 text-gray-800" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#CC0000] rounded-full"></span>
-            </button>
-            <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-              <User className="w-6 h-6 text-gray-800" />
-            </button>
-          </div>
+
+          {/* RIGHT: LOGOUT */}
+          <button
+            onClick={() => {
+              logout();
+              window.location.href = "/";
+            }}
+            className="text-sm font-bold text-[#CC0000]"
+          >
+            Logout
+          </button>
+
         </header>
 
         <div className="px-5 mt-5 space-y-5">
