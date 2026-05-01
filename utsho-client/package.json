@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor/android": "^8.3.1",
     "@capacitor/core": "^8.3.1",
+    "@capacitor/splash-screen": "^8.0.1",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.15.2",
     "lucide-react": "^1.7.0",

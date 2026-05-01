@@ -25,7 +25,7 @@ const TeacherDashboard = () => {
   const fetchScheduleData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://utsho-app.onrender.com", {
+      const res = await fetch("https://utsho-app.onrender.com/api/schedule", {
         headers: { Authorization: `Bearer ${token}` }
       });
       

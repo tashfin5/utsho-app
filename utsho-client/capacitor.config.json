@@ -1,5 +1,14 @@
 {
-  "appId": "com.utsho.com",
+  "appId": "com.utsho.app",
   "appName": "Utsho",
-  "webDir": "dist"
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#CC0000",
+      "showSpinner": false
+    }
+  }
 }

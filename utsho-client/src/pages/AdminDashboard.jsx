@@ -27,7 +27,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("https://utsho-app.onrender.com", {
+      const res = await fetch("https://utsho-app.onrender.com/api/stats", {
         headers: {
           Authorization: `Bearer ${token}`
         }

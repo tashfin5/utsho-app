@@ -28,14 +28,14 @@ const StudentDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       // 1. Fetch Schedule
-      const scheduleRes = await fetch("https://utsho-app.onrender.com", { headers });
+      const scheduleRes = await fetch("https://utsho-app.onrender.com/api/schedule", { headers });
       if (scheduleRes.ok) {
         const schedData = await scheduleRes.json();
         if (Array.isArray(schedData)) setWeeklyClasses(schedData);
       }
 
       // 2. Fetch Other Dashboard Data
-      const dashRes = await fetch("https://utsho-app.onrender.com", { headers });
+      const dashRes = await fetch(`https://utsho-app.onrender.com/api/student/dashboard`, { headers });
       if (dashRes.ok) {
         const dashData = await dashRes.json();
         setDashboardData(dashData);

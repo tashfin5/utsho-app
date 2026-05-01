@@ -14,7 +14,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("https://utsho-app.onrender.com", {
+      const res = await axios.post('https://utsho-app.onrender.com/api/auth/login', {
         userId,
         password
       });
