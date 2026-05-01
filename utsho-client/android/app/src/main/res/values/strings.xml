@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Utsho App</string>
-    <string name="title_activity_main">Utsho App</string>
+    <string name="app_name">Utsho</string>
+    <string name="title_activity_main">Utsho</string>
     <string name="package_name">com.utsho.app</string>
     <string name="custom_url_scheme">com.utsho.app</string>
 </resources>
