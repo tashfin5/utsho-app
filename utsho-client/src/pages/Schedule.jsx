@@ -7,7 +7,7 @@ const Schedule = () => {
   const navigate = useNavigate();
   const user = getUser();
 
-  const API_URL = "http://localhost:5000";
+  const API_URL = "https://utsho-app.onrender.com";
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ const NoticeBoard = () => {
   const navigate = useNavigate();
   const user = getUser(); // ✅ Gets the logged-in user's data
 
-  const API_URL = "http://localhost:5000";
+  const API_URL = "https://utsho-app.onrender.com";
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, X, GraduationCap, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://utsho-app.onrender.com";
 
 const Teachers = () => {
   const navigate = useNavigate();
