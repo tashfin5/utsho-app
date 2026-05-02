@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -16,6 +18,33 @@ import Teachers from './pages/Teachers';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
+
+  useEffect(() => {
+    const handleBackButton = async () => {
+      await CapacitorApp.addListener('backButton', () => {
+        const currentPath = window.location.pathname.toLowerCase();
+
+        // List the paths where pressing 'back' should minimize the app
+        const exitPaths = ['/', '/login', '/admindashboard', '/studentdashboard', '/teacherdashboard'];
+
+        if (exitPaths.includes(currentPath)) {
+          // If on a dashboard or login, minimize the app
+          CapacitorApp.minimizeApp();
+        } else {
+          // Otherwise, just go back to the previous page in the app
+          window.history.back();
+        }
+      });
+    };
+
+    handleBackButton();
+
+    // Cleanup listener just in case
+    return () => {
+      CapacitorApp.removeAllListeners();
+    };
+  }, []);
+
   return (
     <Router>
       <Routes>
